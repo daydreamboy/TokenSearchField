@@ -54,20 +54,20 @@ class TokenTextView: NSTextView {
     textStorage?.replaceCharacters(in: range, with: replacementString)
   }
 
-  func setHighlightedAtRanges(_ ranges: [NSRange], newHighlight: Bool) {
+  func setHighlightedAtRanges(_ ranges: [NSValue], newHighlight: Bool) {
     guard let textStorage = self.textStorage else {
       return
     }
 
     for range in ranges {
-      let intersection = NSIntersectionRange(NSMakeRange(0, textStorage.length), range)
+        let intersection = NSIntersectionRange(NSMakeRange(0, textStorage.length), range.rangeValue)
 
       // if range is already deleted
       if (intersection.length == 0) {
         continue
       }
 
-      textStorage.enumerateAttribute(NSAttachmentAttributeName,
+        textStorage.enumerateAttribute(NSAttributedString.Key.attachment,
                                       in: intersection,
                                       options: NSAttributedString.EnumerationOptions(),
                                       using: { (value: Any?, range: NSRange, stop: UnsafeMutablePointer<ObjCBool>) in
@@ -81,15 +81,15 @@ class TokenTextView: NSTextView {
   }
 
   override func setSelectedRanges(_ ranges: [NSValue], affinity: NSSelectionAffinity, stillSelecting stillSelectingFlag: Bool) {
-    setHighlightedAtRanges(self.selectedRanges as [NSRange], newHighlight: false)
-    setHighlightedAtRanges(ranges as [NSRange], newHighlight: true)
+    setHighlightedAtRanges(self.selectedRanges, newHighlight: false)
+    setHighlightedAtRanges(ranges, newHighlight: true)
     super.setSelectedRanges(ranges, affinity: affinity, stillSelecting: stillSelectingFlag)
   }
 
   func tokenComponents(string: String)
     -> (stem: String?, value: String?) {
 
-      let stringComponents = string.characters.split(separator: ":").flatMap(String.init)
+        let stringComponents: [String] = string.split(separator: ":").flatMap(String.init)
 
       let tokenStem: String? = stringComponents.first?.trimmingCharacters(in: .whitespaces)
       let tokenValue: String? = stringComponents.last?.trimmingCharacters(in: .whitespaces)
@@ -130,7 +130,7 @@ class TokenTextView: NSTextView {
         let tokenString: NSMutableAttributedString = NSMutableAttributedString(attributedString: string)
 
         tokenString.addAttributes([
-          NSFontAttributeName: NSFont.systemFont(ofSize: 13)
+            NSAttributedString.Key.font: NSFont.systemFont(ofSize: 13)
           ], range: NSRange(location: 0, length: tokenString.length))
 
         textStorage?.replaceCharacters(in: tokenRange, with: tokenString)
